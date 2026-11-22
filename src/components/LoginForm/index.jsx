@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {useNavigate, Navigate} from 'react-router'
+import {useNavigate, Navigate, Link} from 'react-router'
 import Cookies from 'js-cookie'
 
 import './index.css'
@@ -7,106 +7,108 @@ import './index.css'
 const LoginForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [showSubmitError, setShowSubmitError] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
-
-  const onChangeUsername = event => {
-    setUsername(event.target.value)
-  }
-
-  const onChangePassword = event => {
-    setPassword(event.target.value)
-  }
-
-  const renderPasswordField = () => (
-    <>
-      <label className="input-label" htmlFor="password">
-        PASSWORD
-      </label>
-      <input
-        type="password"
-        id="password"
-        className="password-input-field"
-        value={password}
-        onChange={onChangePassword}
-        placeholder="Password"
-      />
-    </>
-  )
-
-  const renderUsernameField = () => (
-    <>
-      <label className="input-label" htmlFor="username">
-        USERNAME
-      </label>
-      <input
-        type="text"
-        id="username"
-        className="username-input-field"
-        value={username}
-        onChange={onChangeUsername}
-        placeholder="Username"
-      />
-    </>
-  )
-  const onSubmitSuccess = jwtToken => {
-    Cookies.set('jwt_token', jwtToken, {expires: 30})
-
-    navigate('/', {replace: true})
-  }
-  const onSubmitFailure = errorMsg => {
-    setShowSubmitError(true)
-    setErrorMsg(errorMsg)
-  }
 
   const submitForm = async event => {
     event.preventDefault()
-    const userDetails = {username, password}
-    const url = 'https://apis.ccbp.in/login'
-    const options = {
-      method: 'POST',
-      body: JSON.stringify(userDetails),
+    setErrorMsg('')
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password}),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error_msg || 'Login failed')
+
+      Cookies.set('jwt_token', data.jwt_token, {expires: 30, sameSite: 'lax'})
+      navigate('/', {replace: true})
+    } catch (error) {
+      setErrorMsg(error.message)
+    } finally {
+      setIsSubmitting(false)
     }
-    const response = await fetch(url, options)
-    const data = await response.json()
-    if (response.ok === true) {
-      onSubmitSuccess(data.jwt_token)
-    } else {
-      onSubmitFailure(data.error_msg)
-    }
-  }
-  const jwtToken = Cookies.get('jwt_token')
-  if (jwtToken !== undefined) {
-    return <Navigate to="/" />
   }
 
+  if (Cookies.get('jwt_token')) return <Navigate to="/" replace />
+
   return (
-    <div className="login-form-container">
-      <img
-        src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat_react_js/niat_coding_questions/nxt-trendz-logo.png"
-        className="login-website-logo-mobile-img"
-        alt="website logo"
-      />
-      <img
-        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-login-img.png"
-        className="login-img"
-        alt="website login"
-      />
-      <form className="form-container" onSubmit={submitForm}>
+    <main className="auth-page">
+      <section className="auth-brand-panel">
         <img
+          className="auth-brand-logo"
           src="https://s3.ap-south-1.amazonaws.com/new-assets.ccbp.in/frontend/loading-data/niat_react_js/niat_coding_questions/nxt-trendz-logo.png"
-          className="login-website-logo-desktop-img"
-          alt="website logo"
+          alt="NxtTrendz"
         />
-        <div className="input-container">{renderUsernameField()}</div>
-        <div className="input-container">{renderPasswordField()}</div>
-        <button type="submit" className="login-button">
-          Login
-        </button>
-        {showSubmitError && <p className="error-message">*{errorMsg}</p>}
-      </form>
-    </div>
+        <div>
+          <p className="auth-kicker">WELCOME BACK</p>
+          <h1>Great style starts with a great fit.</h1>
+          <p className="auth-brand-copy">
+            Sign in to continue exploring the latest collection and your saved
+            shopping cart.
+          </p>
+        </div>
+        <div className="auth-feature">
+          <span>01</span>
+          <p>Secure account access</p>
+        </div>
+      </section>
+
+      <section className="auth-form-panel">
+        <form className="auth-card" onSubmit={submitForm}>
+          <p className="auth-card-kicker">MEMBER LOGIN</p>
+          <h2>Sign in</h2>
+          <p className="auth-card-copy">
+            Welcome back. Please enter your details.
+          </p>
+
+          <label className="auth-field">
+            <span>Username</span>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={event => setUsername(event.target.value)}
+              placeholder="Enter your username"
+              autoComplete="username"
+              required
+            />
+          </label>
+          <label className="auth-field">
+            <span>Password</span>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={event => setPassword(event.target.value)}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+          </label>
+
+          {errorMsg && (
+            <p className="auth-error" role="alert">
+              {errorMsg}
+            </p>
+          )}
+          <button
+            className="auth-submit-button"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Signing in...' : 'Sign in'}
+          </button>
+          <p className="auth-switch">
+            New to NxtTrendz? <Link to="/register">Create account</Link>
+          </p>
+        </form>
+      </section>
+    </main>
   )
 }
 

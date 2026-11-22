@@ -72,13 +72,22 @@ cd NxtTrendz-2
 npm install
 ```
 
-**4. Start the development server**
+**4. Start the frontend and backend together**
 
 ```bash
 npm run dev
 ```
 
-Open the local URL displayed in your terminal to access the application.
+Open http://localhost:3000 to access the application. The API runs on port 3001.
+
+For a production-style local run:
+
+```bash
+npm run build
+npm start
+```
+
+Then open http://localhost:3001.
 
 ## Available Scripts
 

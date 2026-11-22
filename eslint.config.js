@@ -7,7 +7,15 @@ import prettier from 'eslint-plugin-prettier'
 import jsxA11y from 'eslint-plugin-jsx-a11y'
 
 export default [
-  {ignores: ['dist']},
+  {ignores: ['dist', 'build', 'node_modules', 'server/users.json']},
+  {
+    files: ['server/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: globals.node,
+      sourceType: 'module',
+    },
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
