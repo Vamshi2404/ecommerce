@@ -89,6 +89,16 @@ npm start
 
 Then open http://localhost:3001.
 
+## Sync changes to GitHub
+
+VS Code's built-in Source Control view tracks saved changes. Review your changes,
+stage the files you want to publish, enter a commit message, and commit. Then
+choose **Sync Changes** (or **Push**) to send the commit to GitHub. Sign in to
+GitHub in VS Code if prompted.
+
+Saving a file does not automatically publish it. The workspace recommends the
+GitHub Pull Requests and Issues extension for GitHub integration.
+
 ## Available Scripts
 
 | Command | Description |
